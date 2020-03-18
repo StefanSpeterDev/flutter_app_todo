@@ -1,96 +1,35 @@
 import 'package:flutter/material.dart';
 import 'todo.dart';
 
-class TodoList extends StatefulWidget {
-  @override
-  _TodoListState createState() => _TodoListState();
-}
+typedef ToggleTodoCallback = void Function(Todo, bool);
 
-class _TodoListState extends State<TodoList> {
-  // Item
-  List<Todo> todos = [];
 
-  // Pour contrôler la valeur de l'input du textfield et pouvoir l'ajouter à la liste
-  TextEditingController controllerInput = new TextEditingController();
+class TodoList extends StatelessWidget {
 
-  // Check if a todo item is checked
-  _toggleTodo(Todo todo, bool isChecked) {
-    setState(() {
-      todo.isDone = isChecked;
-    });
-  }
+  TodoList({@required this.todos, this.onTodoToggle});
 
-  // Create an item in the list
+  final List<Todo> todos;
+  final ToggleTodoCallback onTodoToggle;
+
+
+
   Widget _buildItem(BuildContext context, int index) {
-    // Allow us to know which todo in the list is selected
     final todo = todos[index];
 
     return CheckboxListTile(
       value: todo.isDone,
       title: Text(todo.title),
       onChanged: (bool isChecked) {
-        _toggleTodo(todo, isChecked);
+        onTodoToggle(todo, isChecked);
       },
     );
   }
 
-  // Add a todo to the list
-  _addTodo() async {
-    final customTodo = await showDialog<Todo>(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Ajouter une note '),
-            // Ajouter un texte input :
-            content: TextField(
-              controller: controllerInput,
-              autofocus: true,
-            ),
-            actions: <Widget>[
-              FlatButton(
-                  onPressed: () {
-                    // Retour en arrière
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('Annuler')),
-              FlatButton(
-                  onPressed: () {
-                    final customTodo =
-                        new Todo(title: controllerInput.value.text);
-                    todos.add(customTodo);
-                    // Vide la zone de l'input
-
-                    // Renvoie vers la page de la liste
-                    Navigator.of(context).pop(customTodo);
-                  },
-                  child: Text('Ajouter')),
-            ],
-          );
-        });
-    if(customTodo != null){
-      setState(() {
-        todos.add(customTodo);
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Todo List'),
-      ),
-      body: ListView.builder(
-        itemBuilder: _buildItem,
-        itemCount: todos.length,
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addTodo,
-        child: Icon(
-          Icons.add,
-          semanticLabel: 'Ajouter un item',
-        ),
-      ),
+    return ListView.builder(
+      itemBuilder: _buildItem,
+      itemCount: todos.length,
     );
   }
 }
